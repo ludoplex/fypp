@@ -35,6 +35,7 @@ The example below demonstrates this::
 			inifiles='fyppini.py')
 '''
 
+
 import re
 import os.path
 from waflib import Configure, Logs, Task, TaskGen, Tools, Errors
@@ -44,8 +45,12 @@ except ImportError:
 	fypp = None
 
 
-Tools.ccroot.USELIB_VARS['fypp'] = set([ 'DEFINES', 'INCLUDES', 'MODULES',
-                                         'INIFILES' ])
+Tools.ccroot.USELIB_VARS['fypp'] = {
+	'DEFINES',
+	'INCLUDES',
+	'MODULES',
+	'INIFILES',
+}
 
 FYPP_INCPATH_ST = '-I%s'
 FYPP_DEFINES_ST = '-D%s'
@@ -85,7 +90,7 @@ def fypp_check(conf):
 	match = version_regexp.search(version)
 	if not match:
 		conf.fatal('cannot parse fypp version string')
-	version = (match.group('major'), match.group('minor'))
+	version = match['major'], match['minor']
 	conf.env['FYPP_VERSION'] = version
 	conf.end_msg('found (version %s.%s)' % version)
 
@@ -195,8 +200,7 @@ class FyppIncludeParser(object):
 			if incfile in self._processed:
 				continue
 			self._processed.add(incfile)
-			incnode = self._find_include_node(node, incfile)
-			if incnode:
+			if incnode := self._find_include_node(node, incfile):
 				self._dependencies.append(incnode)
 				self._waiting.append(incnode)
 			else:
@@ -206,8 +210,7 @@ class FyppIncludeParser(object):
 	def _get_include_files(self, node):
 		txt = node.read()
 		matches = self.INCLUDE_PATTERN.finditer(txt)
-		incs = [ match.group('incfile') for match in matches ]
-		return incs
+		return [ match.group('incfile') for match in matches ]
 
 
 	def _find_include_node(self, node, filename):
