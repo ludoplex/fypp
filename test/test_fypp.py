@@ -2993,12 +2993,9 @@ class _TestContainer(unittest.TestCase):
                 raise ValueError(msg)
             already_added.add(name)
             testargs = test[1]
-            methodname = 'test_' + name
-            if len(test) < 3:
-                addtest = True
-            else:
-                addtest = _test_needed(test[2])
+            addtest = True if len(test) < 3 else _test_needed(test[2])
             if addtest:
+                methodname = f'test_{name}'
                 setattr(cls, methodname, methodfactory(*testargs))
 
 
